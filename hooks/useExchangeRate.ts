@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ExchangeRateData, GroundingChunk, ExchangeRateErrorType } from '../types';
 import { GoogleGenAI } from "@google/genai";
@@ -24,7 +25,7 @@ const getInitialState = <T,>(key: string): T | null => {
 export const useExchangeRate = () => {
   const [rate, setRate] = useState<ExchangeRateData | null>(() => getInitialState<ExchangeRateData>(CACHED_RATE_KEY));
   const [sources, setSources] = useState<GroundingChunk[]>(() => getInitialState<GroundingChunk[]>(CACHED_SOURCES_KEY) || []);
-  const [loading, setLoading] = useState<boolean>(!rate); // Only true on initial load if no cache
+  const [isLoading, setIsLoading] = useState<boolean>(!rate); // Only true on initial load if no cache
   const [error, setError] = useState<ExchangeRateErrorType>(null);
 
   const [cooldownExpiry, setCooldownExpiry] = useState<number>(() => parseInt(localStorage.getItem(REFRESH_COOLDOWN_KEY) || '0', 10));
@@ -46,62 +47,60 @@ export const useExchangeRate = () => {
 
 
   const fetchExchangeRate = useCallback(async () => {
-    setLoading(true);
+    setIsLoading(true);
     setError(null);
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-      const generateNumericRate = async (prompt: string): Promise<{ value: number; chunks: GroundingChunk[] }> => {
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: prompt,
-          config: {
-            tools: [{ googleSearch: {} }],
-          },
-        });
+      const prompt = `
+        Provide the latest currency exchange rates for the following pairs. Use real-time data from reliable financial sources.
+        1. The 'buy' exchange rate for 100 US Dollars (USD) to Iraqi Dinar (IQD) specifically from the website ${EXCHANGE_RATE_URL}. This value is typically found in a green-highlighted section on the page.
+        2. The exchange rate for 1 Euro (EUR) to US Dollars (USD).
+        3. The exchange rate for 1 US Dollar (USD) to Turkish Lira (TRY).
+        
+        Return ONLY a raw JSON object with no other text, explanation, or markdown formatting. The JSON object must have these exact keys: "iqdPer100Usd", "usdPerEur", "tryPerUsd".
+        Example of a valid response: {"iqdPer100Usd": 147500, "usdPerEur": 1.08, "tryPerUsd": 32.5}
+    `;
 
-        const modelTextResponse = response.text;
-        const groundingChunks: GroundingChunk[] = response.candidates?.[0]?.groundingMetadata?.groundingChunks as GroundingChunk[] ?? [];
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          tools: [{ googleSearch: {} }],
+        },
+      });
 
-        if (!modelTextResponse) {
-          throw new Error(`Model did not return a valid response for prompt: "${prompt}"`);
-        }
+      const rawText = response.text.trim();
+      const jsonStartIndex = rawText.indexOf('{');
+      const jsonEndIndex = rawText.lastIndexOf('}');
 
-        const cleanedRateText = modelTextResponse.trim().replace(/,/g, '');
-        const numericValue = parseFloat(cleanedRateText);
+      if (jsonStartIndex === -1 || jsonEndIndex === -1 || jsonEndIndex < jsonStartIndex) {
+        throw new Error('No valid JSON object found in the response.');
+      }
 
-        if (isNaN(numericValue) || numericValue <= 0) {
-          throw new Error(`Parsed rate is invalid: '${modelTextResponse}' for prompt: "${prompt}"`);
-        }
+      const jsonStr = rawText.substring(jsonStartIndex, jsonEndIndex + 1);
+      const parsedData = JSON.parse(jsonStr);
 
-        return { value: numericValue, chunks: groundingChunks };
-      };
-
-      const iqdPrompt = `What is the current 'buy' exchange rate for 100 USD to IQD from the website ${EXCHANGE_RATE_URL}?
-                         Provide ONLY the numerical value of the rate, as a whole number, without any additional text,
-                         currency symbols, or formatting (like commas). The value is typically found in a green-highlighted
-                         section on the page, representing the buy rate for 100 USD.`;
-
-      const eurPrompt = `What is the current exchange rate for 1 EUR to USD? Provide ONLY the numerical value, like '1.08'.`;
-      const tryPrompt = `What is the current exchange rate for 1 USD to TRY? Provide ONLY the numerical value, like '32.75'.`;
-
-      const [iqdResult, eurResult, tryResult] = await Promise.all([
-        generateNumericRate(iqdPrompt),
-        generateNumericRate(eurPrompt),
-        generateNumericRate(tryPrompt),
-      ]);
-
-      const allChunks = [...(iqdResult.chunks ?? []), ...(eurResult.chunks ?? []), ...(tryResult.chunks ?? [])];
-      const uniqueChunks = Array.from(new Map(allChunks.filter(item => item.web?.uri).map(item => [item.web!.uri, item])).values());
+      // The IQD rate is mandatory.
+      if (!parsedData.iqdPer100Usd || typeof parsedData.iqdPer100Usd !== 'number' || parsedData.iqdPer100Usd <= 0) {
+        throw new Error('Parsed JSON data is missing or has an invalid "iqdPer100Usd" field.');
+      }
       
-      const iqdPerUsd = iqdResult.value / 100;
+      const iqdPerUsd = parsedData.iqdPer100Usd / 100;
+      
+      // Secondary rates are optional. Default to 0 if invalid or missing.
+      const usdPerEur = (typeof parsedData.usdPerEur === 'number' && parsedData.usdPerEur > 0) ? parsedData.usdPerEur : 0;
+      const tryPerUsd = (typeof parsedData.tryPerUsd === 'number' && parsedData.tryPerUsd > 0) ? parsedData.tryPerUsd : 0;
 
       const newRate: ExchangeRateData = {
         iqd: iqdPerUsd,
-        usdPerEur: eurResult.value,
-        tryPerUsd: tryResult.value,
+        usdPerEur: usdPerEur,
+        tryPerUsd: tryPerUsd,
         updated: new Date().toISOString(),
       };
+
+      const groundingChunks: GroundingChunk[] = response.candidates?.[0]?.groundingMetadata?.groundingChunks as GroundingChunk[] ?? [];
+      const uniqueChunks = Array.from(new Map(groundingChunks.filter(item => item.web?.uri).map(item => [item.web!.uri, item])).values());
 
       setRate(newRate);
       setSources(uniqueChunks);
@@ -114,11 +113,11 @@ export const useExchangeRate = () => {
       console.error('Error fetching exchange rate:', e);
       if (e instanceof Error) {
         const message = e.message.toLowerCase();
-        if (message.includes('api key not valid') || message.includes('api_key_invalid')) {
+        if (message.includes('api key not valid') || message.includes('api_key_invalid') || message.includes('requested entity was not found') || message.includes('quota')) {
           setError('API_KEY');
         } else if (message.includes('failed to fetch')) {
           setError('FETCH');
-        } else if (message.includes('parsed rate is invalid')) {
+        } else if (message.includes('parsed') || e instanceof SyntaxError || message.includes('json')) {
           setError('PARSE');
         } else {
           setError('UNKNOWN');
@@ -130,7 +129,7 @@ export const useExchangeRate = () => {
         setRate(null);
       }
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, []);
 
@@ -152,15 +151,18 @@ export const useExchangeRate = () => {
 
 
   useEffect(() => {
-    fetchExchangeRate();
+    // Don't fetch if there's fresh data from cache
+    if (!rate) {
+        fetchExchangeRate();
+    }
     const intervalId = setInterval(fetchExchangeRate, FETCH_INTERVAL_MS);
     return () => clearInterval(intervalId);
-  }, [fetchExchangeRate]);
+  }, [fetchExchangeRate, rate]);
 
   return {
     rate,
     sources,
-    loading,
+    loading: isLoading,
     error,
     refetch,
     cooldownRemaining

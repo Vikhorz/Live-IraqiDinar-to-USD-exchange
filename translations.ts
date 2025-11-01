@@ -13,10 +13,10 @@ const ku: Translation = {
   iqdCurrency: "دینار",
   
   errorFetching: "هەڵە لە وەرگرتنی داتا",
-  apiKeyError: "کێشەیەک لە پەیوەندیکردن بە خزمەتگوزاری داتاوە هەیە. تکایە دواتر هەوڵبدەرەوە.",
-  fetchError: "داتا وەرنەگیرا. تکایە لە هێڵی ئینتەرنێتەکەت دڵنیابەرەوە و دووبارە هەوڵبدەرەوە.",
-  parseError: "داتاکان لە سەرچاوەکەوە نەخوێندرانەوە. رەنگە فۆرماتەکەی گۆڕدرابێت.",
-  unknownError: "هەڵەیەکی چاوەڕواننەکراو ڕوویدا. تکایە دووبارە هەوڵبدەرەوە.",
+  API_KEY: "کلیلەکەت (API key) بەکارناهێنرێت، سنووری خێراییەکەی تێپەڕاندووە، یان باڵانسی تەواو بووە. تکایە کلیلی دروست هەڵبژێرە.",
+  FETCH: "داتا وەرنەگیرا. تکایە لە هێڵی ئینتەرنێتەکەت دڵنیابەرەوە و دووبارە هەوڵبدەرەوە.",
+  PARSE: "داتاکان لە سەرچاوەکەوە نەخوێندرانەوە. رەنگە فۆرماتەکەی گۆڕدرابێت.",
+  UNKNOWN: "هەڵەیەکی چاوەڕواننەکراو ڕوویدا. تکایە دووبارە هەوڵبدەرەوە.",
   errorFetchingOtherRates: "هەڵە لە وەرگرتنی نرخی یۆرۆ و لیرە.",
   fetchingRates: "وەرگرتنی نوێترین نرخەکان...",
   
@@ -57,6 +57,12 @@ const ku: Translation = {
   loadingAppData: "بارکردنی داتاکان...",
   pullToRefresh: "ڕابکێشە بۆ نوێکردنەوە",
   refreshOnCooldown: (time: string) => `تا ${time} چاوەڕێکە`,
+
+  apiKeyRequiredTitle: "پێویستە API Key هەبێت",
+  apiKeyRequiredDescription: "بۆ دەستکەوتنی نرخی دراوەکان، تکایە کلیلەکەت (API Key) لە Google AI Studio هەڵبژێرە.",
+  selectApiKeyButton: "هەڵبژاردنی API Key",
+  billingInfoText: "پێویستە کلیلەکە خزمەتگوزاریی پارەدانی لەسەر کارا کرابێت.",
+  learnMore: "زیاتر بزانە",
 };
 
 const en: Translation = {
@@ -69,10 +75,10 @@ const en: Translation = {
   centralBankRateDescription: "Official price of 100 USD",
   iqdCurrency: "Dinar",
   errorFetching: "Error Fetching Data",
-  apiKeyError: "There was a problem connecting to the data service. Please try again later.",
-  fetchError: "Could not fetch data. Please check your internet connection and try again.",
-  parseError: "Could not read data from the source. The format may have changed.",
-  unknownError: "An unexpected error occurred. Please try again.",
+  API_KEY: "Your API key is invalid, has exceeded its per-minute rate limit, or has run out of quota. Please select a valid key with billing enabled.",
+  FETCH: "Could not fetch data. Please check your internet connection and try again.",
+  PARSE: "Could not read data from the source. The format may have changed.",
+  UNKNOWN: "An unexpected error occurred. Please try again.",
   errorFetchingOtherRates: "Error fetching EUR and TRY rates.",
   fetchingRates: "Fetching latest rates...",
   updated: "Updated",
@@ -108,6 +114,12 @@ const en: Translation = {
   loadingAppData: "Loading app data...",
   pullToRefresh: "Pull to refresh",
   refreshOnCooldown: (time: string) => `Retry in ${time}`,
+
+  apiKeyRequiredTitle: "API Key Required",
+  apiKeyRequiredDescription: "To access real-time exchange rates, please select your Google AI Studio API key.",
+  selectApiKeyButton: "Select API Key",
+  billingInfoText: "An API key with billing enabled is required.",
+  learnMore: "Learn more",
 };
 
 const ar: Translation = {
@@ -120,10 +132,10 @@ const ar: Translation = {
   centralBankRateDescription: "السعر الرسمي لـ 100 دولار",
   iqdCurrency: "دينار",
   errorFetching: "خطأ في جلب البيانات",
-  apiKeyError: "حدثت مشكلة في الاتصال بخدمة البيانات. يرجى المحاولة مرة أخرى لاحقًا.",
-  fetchError: "تعذر جلب البيانات. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.",
-  parseError: "لم نتمكن من قراءة البيانات من المصدر. قد يكون التنسيق قد تغير.",
-  unknownError: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+  API_KEY: "مفتاح API الخاص بك غير صالح، أو تجاوز حد الطلبات في الدقيقة، أو نفدت حصته. يرجى تحديد مفتاح صالح مع تمكين الفوترة.",
+  FETCH: "تعذر جلب البيانات. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.",
+  PARSE: "لم نتمكن من قراءة البيانات من المصدر. قد يكون التنسيق قد تغير.",
+  UNKNOWN: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
   errorFetchingOtherRates: "خطأ في جلب أسعار اليورو والليرة.",
   fetchingRates: "جاري جلب أحدث الأسعار...",
   updated: "تم التحديث",
@@ -159,6 +171,12 @@ const ar: Translation = {
   loadingAppData: "جاري تحميل بيانات التطبيق...",
   pullToRefresh: "اسحب للتحديث",
   refreshOnCooldown: (time: string) => `أعد المحاولة في ${time}`,
+
+  apiKeyRequiredTitle: "مطلوب مفتاح API",
+  apiKeyRequiredDescription: "للوصول إلى أسعار الصرف في الوقت الفعلي، يرجى تحديد مفتاح API الخاص بك في Google AI Studio.",
+  selectApiKeyButton: "تحديد مفتاح API",
+  billingInfoText: "مطلوب مفتاح API مع تمكين الفوترة.",
+  learnMore: "اعرف المزيد",
 };
 
 

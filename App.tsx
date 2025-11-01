@@ -1,5 +1,5 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useExchangeRate } from './hooks/useExchangeRate';
 import { Header } from './components/Header';
 import { RateDisplay } from './components/RateDisplay';
@@ -31,6 +31,7 @@ const ChevronIcon: React.FC<{ className?: string }> = ({ className }) => (
 
 export default function App(): React.ReactElement {
   const { rate, sources, loading, error, refetch, cooldownRemaining } = useExchangeRate();
+  
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
   const [language, setLanguage] = useLanguage();
   const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -47,8 +48,8 @@ export default function App(): React.ReactElement {
   const centralBankRateForDisplay = useMemo(() => CENTRAL_BANK_RATE * 100, []);
   const eurPerUsd = useMemo(() => (usdPerEurValue > 0 ? 1 / usdPerEurValue : 0), [usdPerEurValue]);
   
-  const isInitialLoading = loading && !rate;
-
+  const isInitialLoading = loading && !rate && !error;
+  
   const handleShare = async () => {
     if (!rate) return;
 
@@ -90,10 +91,10 @@ export default function App(): React.ReactElement {
 
   return (
     <>
-      {isInitialLoading && !error && <StartupLoader t={t} />}
+      {isInitialLoading && <StartupLoader t={t} />}
 
       <main 
-        className={`min-h-screen w-full flex items-center justify-center p-4 sm:p-6 transition-filter duration-500 ${isInitialLoading && !error ? 'blur-sm' : ''}`}
+        className={`min-h-screen w-full flex items-center justify-center p-4 sm:p-6 transition-filter duration-500 ${isInitialLoading ? 'blur-sm' : ''}`}
         onTouchStart={touchStart}
         onTouchMove={touchMove}
         onTouchEnd={touchEnd}
@@ -113,7 +114,7 @@ export default function App(): React.ReactElement {
             <LanguageSelector currentLang={language} onChangeLang={setLanguage} />
             <Header t={t} />
             
-            {isInitialLoading && !error && (
+            {loading && !rate && !error && (
               <>
                 <div className="mt-6 space-y-4">
                   <RateDisplaySkeleton />
@@ -126,7 +127,7 @@ export default function App(): React.ReactElement {
             {error && (
               <div className="my-6 text-center text-red-500 bg-red-100 dark:bg-red-900/50 p-4 rounded-lg transition-colors duration-300">
                 <p className="font-semibold">{t.errorFetching}</p>
-                <p className="text-sm">{t.fetchError}</p>
+                <p className="text-sm">{t[error] ?? t.unknownError}</p>
                 <button
                   onClick={() => refetch()}
                   className="mt-4 px-5 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 active:bg-sky-800 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
@@ -136,7 +137,7 @@ export default function App(): React.ReactElement {
               </div>
             )}
 
-            {!isInitialLoading && rate && (
+            {!loading && rate && (
               <>
                 <div className="mt-6 space-y-4 animate-fade-in">
                   <RateDisplay

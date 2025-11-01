@@ -66,19 +66,22 @@ export const LastUpdated: React.FC<LastUpdatedProps> = ({ date, loading, t, onRe
             <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
           </div>
           <span>{t.updated} {timeAgo}</span>
-          <button 
-            onClick={onRefresh} 
-            disabled={loading || isOnCooldown}
-            className="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-1 focus:ring-sky-500"
-            aria-label="Refresh rates"
-          >
-            <RefreshIcon />
-          </button>
-          <div className="w-28 text-left">
-             {isOnCooldown && (
-                <span className="text-xs tabular-nums">
+          <div className="relative group">
+            <button 
+              onClick={onRefresh} 
+              disabled={loading || isOnCooldown}
+              className="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-1 focus:ring-sky-500"
+              aria-label="Refresh rates"
+            >
+              <RefreshIcon />
+            </button>
+            {isOnCooldown && (
+                <div 
+                    role="tooltip"
+                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-3 py-1.5 bg-gray-800 dark:bg-gray-200 text-white dark:text-black text-xs font-semibold rounded-md shadow-lg opacity-0 scale-95 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-focus-within:opacity-100 group-focus-within:scale-100 transition-all duration-200 z-10"
+                >
                     {t.refreshOnCooldown(formatCooldown(cooldownRemaining))}
-                </span>
+                </div>
             )}
           </div>
         </>

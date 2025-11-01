@@ -15,6 +15,7 @@ export interface GroundingChunk {
 export type ExchangeRateErrorType = 'API_KEY' | 'FETCH' | 'PARSE' | 'UNKNOWN' | null;
 
 export interface Translation {
+  [key: string]: any; // Allow indexing with string for error messages
   appName: string;
   headerTitle: string;
   headerSubtitle: string;
@@ -58,9 +59,14 @@ export interface Translation {
   closeButton: string;
   loadingAppData: string;
   pullToRefresh: string;
-  apiKeyError: string;
-  fetchError: string;
-  parseError: string;
-  unknownError: string;
+  API_KEY: string;
+  FETCH: string;
+  PARSE: string;
+  UNKNOWN: string;
   refreshOnCooldown: (time: string) => string;
+  apiKeyRequiredTitle: string;
+  apiKeyRequiredDescription: string;
+  selectApiKeyButton: string;
+  billingInfoText: string;
+  learnMore: string;
 }

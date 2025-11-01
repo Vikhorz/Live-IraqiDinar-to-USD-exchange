@@ -61,7 +61,7 @@ export const Calculator: React.FC<CalculatorProps> = ({ rates, t }) => {
     setToCurrency(tempFrom);
   };
   
-  const selectClasses = "w-full appearance-none bg-transparent p-2 text-center font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-200 transition-colors duration-300 focus:outline-none";
+  const selectClasses = "w-full appearance-none bg-transparent p-2 pt-3 text-center font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-200 transition-colors duration-300 focus:outline-none";
 
 
   return (
@@ -80,22 +80,26 @@ export const Calculator: React.FC<CalculatorProps> = ({ rates, t }) => {
       </div>
 
       <div className="flex items-center justify-between my-3 sm:my-4 space-x-2 rtl:space-x-reverse">
-        <div className="flex-1 text-center bg-gray-100 dark:bg-gray-700/50 rounded-lg transition-colors duration-300 relative">
-          <label className="absolute top-0.5 right-2 text-[10px] text-gray-500 dark:text-gray-400">{t.from}</label>
-          <select value={fromCurrency} onChange={e => setFromCurrency(e.target.value)} className={selectClasses}>
-            {currencies.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
-          </select>
+        <div className="flex-1 relative">
+          <label className="absolute -top-2 right-3 text-xs bg-gray-100 dark:bg-gray-700/50 px-1 text-gray-500 dark:text-gray-400 transition-colors duration-300 z-10">{t.from}</label>
+          <div className="text-center bg-gray-100 dark:bg-gray-700/50 rounded-lg transition-colors duration-300 relative overflow-hidden">
+            <select value={fromCurrency} onChange={e => setFromCurrency(e.target.value)} className={selectClasses}>
+              {currencies.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+            </select>
+          </div>
         </div>
         
         <button onClick={handleSwap} className="flex-shrink-0 p-1.5 sm:p-2 rounded-full text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 focus:ring-sky-500" aria-label="Swap currencies">
             <SwapIcon className="w-5 h-5 sm:w-6 sm:h-6 transform transition-transform duration-300" />
         </button>
 
-        <div className="flex-1 text-center bg-gray-100 dark:bg-gray-700/50 rounded-lg transition-colors duration-300 relative">
-          <label className="absolute top-0.5 right-2 text-[10px] text-gray-500 dark:text-gray-400">{t.to}</label>
-          <select value={toCurrency} onChange={e => setToCurrency(e.target.value)} className={selectClasses}>
-            {currencies.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
-          </select>
+        <div className="flex-1 relative">
+          <label className="absolute -top-2 right-3 text-xs bg-gray-100 dark:bg-gray-700/50 px-1 text-gray-500 dark:text-gray-400 transition-colors duration-300 z-10">{t.to}</label>
+           <div className="text-center bg-gray-100 dark:bg-gray-700/50 rounded-lg transition-colors duration-300 relative overflow-hidden">
+              <select value={toCurrency} onChange={e => setToCurrency(e.target.value)} className={selectClasses}>
+                {currencies.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+              </select>
+           </div>
         </div>
       </div>
       

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { Language } from '../hooks/useLanguage';
 
 interface LanguageSelectorProps {
@@ -6,32 +6,93 @@ interface LanguageSelectorProps {
   onChangeLang: (lang: Language) => void;
 }
 
-const languages: { code: Language; name: string }[] = [
-  { code: 'ku', name: 'کوردی' },
-  { code: 'ar', name: 'العربية' },
+const languages: { code: Language; name: string; isRtl?: boolean }[] = [
+  { code: 'ku', name: 'کوردی', isRtl: true },
+  { code: 'ar', name: 'العربية', isRtl: true },
   { code: 'en', name: 'English' },
 ];
 
+const EarthIcon: React.FC = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h8a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.707 4.5l.586-.586a2 2 0 012.828 0l.586.586M12 19.5a5.5 5.5 0 100-11 5.5 5.5 0 000 11z" />
+    </svg>
+);
+
+const CheckIcon: React.FC = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+);
+
+
 export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ currentLang, onChangeLang }) => {
-  return (
-    <div className="absolute top-4 right-4 flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-700 p-1 transition-colors duration-200 z-10">
-      {languages.map(({ code, name }) => {
-        const isRtlLang = code === 'ku' || code === 'ar';
-        return (
-          <button
-            key={code}
-            onClick={() => onChangeLang(code)}
-            className={`px-3 py-1 text-sm font-semibold rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800 ${
-              currentLang === code
-                ? 'bg-white dark:bg-gray-900 text-sky-600 dark:text-sky-400 shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-            } ${isRtlLang ? 'font-noto-kufi-arabic' : ''}`}
-            aria-pressed={currentLang === code}
-          >
-            {name}
-          </button>
-        );
-      })}
-    </div>
-  );
+    const [isOpen, setIsOpen] = useState(false);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+    const currentLanguageDetails = languages.find(l => l.code === currentLang);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleLanguageSelect = (langCode: Language) => {
+        onChangeLang(langCode);
+        setIsOpen(false);
+    };
+
+    return (
+        <div ref={wrapperRef} className="absolute top-4 right-4 z-20">
+            <button
+                onClick={() => setIsOpen(prev => !prev)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/70 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800"
+                aria-haspopup="true"
+                aria-expanded={isOpen}
+                aria-label="Select language"
+            >
+                <EarthIcon />
+                <span className={`text-sm font-semibold ${currentLanguageDetails?.isRtl ? 'font-noto-kufi-arabic' : ''}`}>
+                    {currentLanguageDetails?.name}
+                </span>
+            </button>
+
+            {isOpen && (
+                <div
+                    className="absolute right-0 mt-2 w-40 origin-top-right rounded-lg bg-white dark:bg-gray-800 shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none transition-all duration-150 ease-out animate-scale-in"
+                    role="menu"
+                    aria-orientation="vertical"
+                >
+                    <div className="py-1" role="none">
+                        {languages.map(({ code, name, isRtl }) => (
+                            <button
+                                key={code}
+                                onClick={() => handleLanguageSelect(code)}
+                                className={`w-full text-left flex items-center justify-between px-4 py-2 text-sm ${
+                                    currentLang === code
+                                        ? 'font-bold text-sky-600 dark:text-sky-400'
+                                        : 'text-gray-700 dark:text-gray-200'
+                                } hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ${isRtl ? 'font-noto-kufi-arabic' : ''}`}
+                                role="menuitem"
+                            >
+                                <span>{name}</span>
+                                {currentLang === code && <CheckIcon />}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+            <style>{`
+              @keyframes scaleIn {
+                from { opacity: 0; transform: scale(0.95); }
+                to { opacity: 1; transform: scale(1); }
+              }
+              .animate-scale-in { animation: scaleIn 0.1s ease-out forwards; }
+            `}</style>
+        </div>
+    );
 };
