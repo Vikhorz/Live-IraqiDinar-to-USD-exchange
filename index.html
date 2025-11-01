@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DinarLive</title>
+    <link rel="icon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3ccircle cx='50' cy='50' r='48' fill='%23FBBF24' stroke='%23B45309' stroke-width='4'/%3e%3ctext x='50' y='60' font-family='Noto Kufi Arabic, sans-serif' font-size='40' font-weight='bold' fill='%23B45309' text-anchor='middle'%3eد.ع%3c/text%3e%3c/svg%3e" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.27.0"
+  }
+}
+</script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          'noto-kufi-arabic': ['"Noto Kufi Arabic"', 'sans-serif'],
+        },
+      },
+    },
+  }
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  // Prevents flash of wrong theme
+  (function() {
+    const theme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (theme === 'dark' || (!theme && prefersDark)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
+    // Set initial language and direction
+    const lang = localStorage.getItem('language') || 'ku';
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'en' ? 'ltr' : 'rtl';
+  })();
+</script>
+<style>
+  body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  /* Default font for RTL languages */
+  html[dir="rtl"] body {
+    font-family: 'Noto Kufi Arabic', sans-serif;
+  }
+  /* Font for LTR languages */
+  html[dir="ltr"] body {
+    font-family: 'Poppins', sans-serif;
+  }
+  /* Ensure RTL language names in the selector use the correct font, even in LTR mode */
+  html[dir="ltr"] .font-noto-kufi-arabic {
+    font-family: 'Noto Kufi Arabic', sans-serif;
+  }
+</style>
+</head>
+  <body class="bg-gray-100 dark:bg-black">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

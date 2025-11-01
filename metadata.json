@@ -1,0 +1,5 @@
+{
+  "name": "DinarLive",
+  "description": "A modern and real-time currency exchange tracker for the Iraqi Dinar (IQD) to the US Dollar (USD). It displays the latest buy and sell rates, updating automatically every few seconds to provide the most current information.",
+  "requestFramePermissions": []
+}
