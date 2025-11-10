@@ -1,3 +1,5 @@
+
+
 import React, { useState, useMemo } from 'react';
 import type { Translation } from '../types';
 
@@ -9,10 +11,23 @@ interface CalculatorProps {
 }
 
 const SwapIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
   </svg>
 );
+
+// Reusable Tooltip Component defined locally
+const Tooltip: React.FC<{ text: string; children: React.ReactNode; className?: string }> = ({ text, children, className }) => {
+  return (
+    <div className={`group relative ${className}`}>
+      {children}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs font-semibold rounded-md shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30">
+        {text}
+      </div>
+    </div>
+  );
+};
+
 
 export const Calculator: React.FC<CalculatorProps> = ({ rates, t }) => {
   const [amount, setAmount] = useState('');
@@ -24,27 +39,39 @@ export const Calculator: React.FC<CalculatorProps> = ({ rates, t }) => {
     { code: 'IQD', name: t.iqd },
     { code: 'EUR', name: t.eur },
     { code: 'TRY', name: t.try },
+    { code: 'GBP', name: t.gbp },
+    { code: 'IRT', name: t.irt },
   ], [t]);
 
-  const allRates = useMemo(() => rates, [rates]);
+  const currencyTooltips: { [key: string]: keyof Translation } = useMemo(() => ({
+    USD: 'usdTooltip',
+    IQD: 'iqdTooltip',
+    EUR: 'eurTooltip',
+    TRY: 'tryTooltip',
+    GBP: 'gbpTooltip',
+    IRT: 'irtTooltip',
+  }), []);
+
+  const directRate = useMemo(() => {
+    const fromRate = rates[fromCurrency];
+    const toRate = rates[toCurrency];
+
+    if (typeof fromRate !== 'number' || typeof toRate !== 'number' || fromRate <= 0) {
+      return 0;
+    }
+    return toRate / fromRate;
+  }, [fromCurrency, toCurrency, rates]);
 
   const calculatedResult = useMemo(() => {
     const numericAmount = parseFloat(amount);
-    if (isNaN(numericAmount) || numericAmount <= 0 || !allRates.EUR) { // Added check for rates.EUR to prevent calculation before it's ready
+    if (isNaN(numericAmount) || numericAmount <= 0 || directRate <= 0) {
       return '0';
     }
 
-    const fromRate = allRates[fromCurrency as keyof typeof allRates];
-    const toRate = allRates[toCurrency as keyof typeof allRates];
+    const result = numericAmount * directRate;
 
-    if (!fromRate || !toRate || fromRate <= 0) return '0';
-    
-    // Convert amount to USD first, then to the target currency
-    const amountInUSD = numericAmount / fromRate;
-    const result = amountInUSD * toRate;
-    
     const formatOptions: Intl.NumberFormatOptions = {};
-    if (toCurrency === 'IQD') {
+    if (toCurrency === 'IQD' || toCurrency === 'IRT') {
         formatOptions.maximumFractionDigits = 0;
     } else {
         formatOptions.minimumFractionDigits = 2;
@@ -52,8 +79,8 @@ export const Calculator: React.FC<CalculatorProps> = ({ rates, t }) => {
     }
 
     return result.toLocaleString('en-US', formatOptions);
+  }, [amount, toCurrency, directRate]);
 
-  }, [amount, fromCurrency, toCurrency, allRates]);
 
   const handleSwap = () => {
     const tempFrom = fromCurrency;
@@ -81,12 +108,14 @@ export const Calculator: React.FC<CalculatorProps> = ({ rates, t }) => {
 
       <div className="flex items-center justify-between my-3 sm:my-4 space-x-2 rtl:space-x-reverse">
         <div className="flex-1 relative">
-          <label className="absolute -top-2 right-3 text-xs bg-gray-100 dark:bg-gray-700/50 px-1 text-gray-500 dark:text-gray-400 transition-colors duration-300 z-10">{t.from}</label>
-          <div className="text-center bg-gray-100 dark:bg-gray-700/50 rounded-lg transition-colors duration-300 relative overflow-hidden">
-            <select value={fromCurrency} onChange={e => setFromCurrency(e.target.value)} className={selectClasses}>
-              {currencies.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
-            </select>
-          </div>
+          <label className="absolute -top-2 right-3 text-xs bg-white dark:bg-gray-800 px-1 text-gray-500 dark:text-gray-400 transition-colors duration-300 z-10">{t.from}</label>
+          <Tooltip text={t[currencyTooltips[fromCurrency]]} className="w-full">
+            <div className="text-center bg-gray-100 dark:bg-gray-700/50 rounded-lg transition-colors duration-300 relative overflow-hidden">
+              <select value={fromCurrency} onChange={e => setFromCurrency(e.target.value)} className={selectClasses}>
+                {currencies.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+              </select>
+            </div>
+          </Tooltip>
         </div>
         
         <button onClick={handleSwap} className="flex-shrink-0 p-1.5 sm:p-2 rounded-full text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 focus:ring-sky-500" aria-label="Swap currencies">
@@ -94,21 +123,30 @@ export const Calculator: React.FC<CalculatorProps> = ({ rates, t }) => {
         </button>
 
         <div className="flex-1 relative">
-          <label className="absolute -top-2 right-3 text-xs bg-gray-100 dark:bg-gray-700/50 px-1 text-gray-500 dark:text-gray-400 transition-colors duration-300 z-10">{t.to}</label>
-           <div className="text-center bg-gray-100 dark:bg-gray-700/50 rounded-lg transition-colors duration-300 relative overflow-hidden">
-              <select value={toCurrency} onChange={e => setToCurrency(e.target.value)} className={selectClasses}>
-                {currencies.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
-              </select>
-           </div>
+          <label className="absolute -top-2 right-3 text-xs bg-white dark:bg-gray-800 px-1 text-gray-500 dark:text-gray-400 transition-colors duration-300 z-10">{t.to}</label>
+           <Tooltip text={t[currencyTooltips[toCurrency]]} className="w-full">
+             <div className="text-center bg-gray-100 dark:bg-gray-700/50 rounded-lg transition-colors duration-300 relative overflow-hidden">
+                <select value={toCurrency} onChange={e => setToCurrency(e.target.value)} className={selectClasses}>
+                  {currencies.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+                </select>
+             </div>
+           </Tooltip>
         </div>
       </div>
       
-      <div className="mt-4 p-3 sm:p-4 bg-green-50 dark:bg-green-900/40 rounded-lg text-center transition-colors duration-300">
-        <p className="text-sm text-green-700 dark:text-green-300 mb-1 transition-colors duration-300">{t.result}</p>
-        <p className="text-xl sm:text-2xl md:text-3xl font-bold font-mono text-green-800 dark:text-green-200 transition-colors duration-300" dir="ltr">
-            {calculatedResult}
-        </p>
-      </div>
+      <Tooltip text={t.resultTooltip} className="w-full">
+        <div className="mt-4 p-3 sm:p-4 bg-green-50 dark:bg-green-900/40 rounded-lg text-center transition-colors duration-300">
+          <p className="text-sm text-green-700 dark:text-green-300 mb-1 transition-colors duration-300">{t.result}</p>
+          <p className="text-xl sm:text-2xl md:text-3xl font-bold font-mono text-green-800 dark:text-green-200 transition-colors duration-300" dir="ltr">
+              {calculatedResult}
+          </p>
+          {directRate > 0 && fromCurrency !== toCurrency && (
+              <p className="text-xs text-green-600 dark:text-green-400 mt-1.5 font-mono" dir="ltr">
+                  1 {fromCurrency} ≈ {directRate.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })} {toCurrency}
+              </p>
+          )}
+        </div>
+      </Tooltip>
     </div>
   );
 };

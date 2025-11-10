@@ -7,8 +7,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ t }) => {
   return (
-    <div className="text-center pt-12 sm:pt-14">
-        <h1 className="text-xl font-bold text-gray-700 dark:text-gray-300 tracking-wider mb-2">{t.appName}</h1>
+    <div className="text-center pt-4">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white transition-colors duration-300">
             {t.headerTitle}
         </h2>

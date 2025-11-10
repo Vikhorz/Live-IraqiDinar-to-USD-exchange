@@ -36,7 +36,12 @@
   (function() {
     const theme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (theme === 'dark' || (!theme && prefersDark)) {
+    
+    // The theme from localStorage takes precedence.
+    // If it's 'system' or not set, we fall back to the system preference.
+    const isDark = theme === 'dark' || (theme !== 'light' && prefersDark);
+
+    if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
@@ -66,7 +71,7 @@
   }
 </style>
 </head>
-  <body class="bg-gray-100 dark:bg-black">
+  <body class="bg-gray-50 dark:bg-gray-900">
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>

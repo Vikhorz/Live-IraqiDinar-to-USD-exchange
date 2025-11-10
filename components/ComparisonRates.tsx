@@ -5,6 +5,8 @@ interface ComparisonRatesProps {
     iqdRate?: number;
     eurRate?: number; // vs USD
     tryRate?: number; // vs USD
+    gbpRate?: number; // vs USD
+    irtRate?: number; // vs USD
     t: Translation;
 }
 
@@ -16,20 +18,25 @@ const ComparisonItem: React.FC<{label: string, value: string, description?: stri
     </div>
 );
 
-export const ComparisonRates: React.FC<ComparisonRatesProps> = ({ iqdRate, eurRate, tryRate, t }) => {
-    if (!iqdRate || (!eurRate && !tryRate)) {
+export const ComparisonRates: React.FC<ComparisonRatesProps> = ({ iqdRate, eurRate, tryRate, gbpRate, irtRate, t }) => {
+    if (!iqdRate || (!eurRate && !tryRate && !gbpRate && !irtRate)) {
         return null; 
     }
 
     const iqdPerEur = eurRate ? (iqdRate / eurRate).toLocaleString('en-US', { maximumFractionDigits: 0 }) : '---';
     const iqdPerTry = tryRate ? (iqdRate / tryRate).toLocaleString('en-US', { maximumFractionDigits: 0 }) : '---';
+    const iqdPerGbp = gbpRate ? (iqdRate / gbpRate).toLocaleString('en-US', { maximumFractionDigits: 0 }) : '---';
+    const iqdPerIrt = irtRate ? (iqdRate / irtRate).toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 }) : '---';
+
 
     return (
         <div className="mt-6 animate-fade-in">
             <h3 className="text-center text-base font-bold text-gray-700 dark:text-gray-200 transition-colors duration-300 mb-3">{t.comparisonRatesTitle}</h3>
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
-               {eurRate && <ComparisonItem label={t.eurToIqd} value={iqdPerEur} description={t.eurRateDescription} currency={t.iqdCurrency} />}
-               {tryRate && <ComparisonItem label={t.tryToIqd} value={iqdPerTry} description={t.tryRateDescription} currency={t.iqdCurrency} />}
+               {eurRate > 0 && <ComparisonItem label={t.eurToIqd} value={iqdPerEur} description={t.eurRateDescription} currency={t.iqdCurrency} />}
+               {tryRate > 0 && <ComparisonItem label={t.tryToIqd} value={iqdPerTry} description={t.tryRateDescription} currency={t.iqdCurrency} />}
+               {gbpRate > 0 && <ComparisonItem label={t.gbpToIqd} value={iqdPerGbp} description={t.gbpRateDescription} currency={t.iqdCurrency} />}
+               {irtRate > 0 && <ComparisonItem label={t.irtToIqd} value={iqdPerIrt} description={t.irtRateDescription} currency={t.iqdCurrency} />}
             </div>
         </div>
     );

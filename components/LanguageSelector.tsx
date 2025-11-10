@@ -47,7 +47,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ currentLang,
     };
 
     return (
-        <div ref={wrapperRef} className="absolute top-4 right-4 z-20">
+        <div ref={wrapperRef} className="relative z-20">
             <button
                 onClick={() => setIsOpen(prev => !prev)}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/70 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800"

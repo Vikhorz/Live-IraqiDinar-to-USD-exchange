@@ -9,6 +9,13 @@ export const usePullToRefresh = (onRefresh: () => void, disabled: boolean = fals
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const touchStart = useCallback((e: React.TouchEvent<HTMLElement>) => {
+    // Ignore pull-to-refresh if the touch starts on an interactive element.
+    const target = e.target as HTMLElement;
+    if (target.closest('button, a, select, input')) {
+        setPullStartPosition(0);
+        return;
+    }
+    
     if (disabled || window.scrollY > 0) return; // Don't activate if disabled or page is scrolled
     setPullStartPosition(e.touches[0].clientY);
   }, [disabled]);
@@ -23,7 +30,7 @@ export const usePullToRefresh = (onRefresh: () => void, disabled: boolean = fals
   }, [pullStartPosition, disabled]);
 
   const touchEnd = useCallback(async () => {
-    if (disabled) return;
+    if (disabled || pullStartPosition === 0) return;
     if (pullPosition > PULL_THRESHOLD) {
       setIsRefreshing(true);
       setPullPosition(PULL_THRESHOLD); // Keep indicator visible while refreshing
@@ -41,7 +48,7 @@ export const usePullToRefresh = (onRefresh: () => void, disabled: boolean = fals
       setPullPosition(0); // Retract if not pulled far enough
       setPullStartPosition(0);
     }
-  }, [pullPosition, onRefresh, disabled]);
+  }, [pullPosition, onRefresh, disabled, pullStartPosition]);
 
   return {
     isRefreshing,
