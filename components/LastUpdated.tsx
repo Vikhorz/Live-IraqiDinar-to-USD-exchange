@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import type { Translation } from '../types';
 
@@ -41,7 +42,11 @@ export const LastUpdated: React.FC<LastUpdatedProps> = ({ date, loading, t, onRe
         } else if (seconds < 60) {
             setTimeAgo(t.secondsAgo(seconds));
         } else {
-             setTimeAgo(new Date(date).toLocaleTimeString('en-GB'));
+             // After a minute, show the precise time of the last update
+             setTimeAgo(new Date(date).toLocaleTimeString([], {
+                hour: 'numeric',
+                minute: '2-digit'
+             }));
         }
     };
     update();
@@ -52,7 +57,7 @@ export const LastUpdated: React.FC<LastUpdatedProps> = ({ date, loading, t, onRe
   const isButtonDisabled = loading || cooldownSeconds > 0;
 
   return (
-    <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2 transition-colors duration-300 h-5">
+    <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2 h-5 transition-colors duration-300">
       {loading ? (
         <>
           <InlineSpinner />
@@ -68,7 +73,7 @@ export const LastUpdated: React.FC<LastUpdatedProps> = ({ date, loading, t, onRe
           <button 
             onClick={onRefresh} 
             disabled={isButtonDisabled}
-            className="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-1 focus:ring-sky-500 relative"
+            className="group p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-1 focus:ring-sky-500 relative"
             aria-label="Refresh rates"
           >
             {cooldownSeconds > 0 ? (
@@ -78,7 +83,7 @@ export const LastUpdated: React.FC<LastUpdatedProps> = ({ date, loading, t, onRe
             )}
             
             {cooldownSeconds > 0 && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs font-semibold rounded-md shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs font-semibold rounded-md shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                     {t.refreshCooldown(formatCooldown(cooldownSeconds))}
                 </div>
             )}

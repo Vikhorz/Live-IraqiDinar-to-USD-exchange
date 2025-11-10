@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useExchangeRate } from './hooks/useExchangeRate';
 import { Header } from './components/Header';
@@ -19,6 +20,8 @@ import { ChatFab } from './components/ChatFab';
 import { ChatDialog } from './components/ChatDialog';
 import { RateHistoryChart } from './components/RateHistoryChart';
 import { RateHistoryChartSkeleton } from './components/RateHistoryChartSkeleton';
+import { CurrencyInfoModal } from './components/CurrencyInfoModal';
+import { BuyCurrencyModal } from './components/BuyCurrencyModal';
 
 // Official Central Bank of Iraq rate for cash sales to the public: 1 USD = 1310 IQD
 const CENTRAL_BANK_RATE = 1310;
@@ -36,18 +39,25 @@ const ChevronIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 );
 
+// Helper function to check for large screens based on Tailwind's 'lg' breakpoint (1024px)
+const isLargeScreen = () => {
+    if (typeof window === 'undefined') return false; // Default for SSR
+    return window.matchMedia('(min-width: 1024px)').matches;
+};
+
 
 export default function App(): React.ReactElement {
   const { rate, sources, loading, error, refetch, rateHistory, cooldownSeconds } = useExchangeRate();
   
-  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
-  const [isChartOpen, setIsChartOpen] = useState(true);
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState(isLargeScreen());
+  const [isChartOpen, setIsChartOpen] = useState(isLargeScreen());
   const [language, setLanguage] = useLanguage();
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isSourcesOpen, setIsSourcesOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [shareFeedback, setShareFeedback] = useState('');
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
+  const [modalState, setModalState] = useState<{ currency: string | null; view: 'info' | 'buy' }>({ currency: null, view: 'info' });
   const t = translations[language];
 
   const iqdRateValue = useMemo(() => rate?.iqd ?? 0, [rate]);
@@ -58,6 +68,15 @@ export default function App(): React.ReactElement {
   const rateForDisplay = useMemo(() => iqdRateValue * 100, [iqdRateValue]);
   const centralBankRateForDisplay = useMemo(() => CENTRAL_BANK_RATE * 100, []);
   
+  const allRates = useMemo(() => ({
+    IQD: iqdRateValue,
+    USD: 1,
+    EUR: eurPerUsdValue,
+    TRY: tryPerUsdValue,
+    GBP: gbpPerUsdValue,
+    IRT: irtPerUsdValue,
+  }), [iqdRateValue, eurPerUsdValue, tryPerUsdValue, gbpPerUsdValue, irtPerUsdValue]);
+
   const isInitialLoading = loading && !rate && !error;
   const showFullScreenLoader = isInitialLoading || isManualRefreshing;
   
@@ -108,6 +127,17 @@ export default function App(): React.ReactElement {
       }
     }
   };
+  
+  const handleCurrencySelect = (currencyCode: string) => {
+    setModalState({ currency: currencyCode, view: 'info' });
+  };
+  const handleBuyClick = () => {
+    setModalState(prev => ({ ...prev, view: 'buy' }));
+  };
+  const handleCloseModals = () => {
+    setModalState({ currency: null, view: 'info' });
+  };
+
 
   return (
     <>
@@ -180,6 +210,7 @@ export default function App(): React.ReactElement {
                             gbpRate={gbpPerUsdValue}
                             irtRate={irtPerUsdValue}
                             t={t}
+                            onCurrencySelect={handleCurrencySelect}
                         />
                     )}
                 </div>
@@ -242,14 +273,11 @@ export default function App(): React.ReactElement {
                             id="calculator-content"
                             className={`transition-all duration-500 ease-in-out overflow-hidden ${isCalculatorOpen ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}
                         >
-                            <Calculator rates={{
-                            IQD: iqdRateValue,
-                            USD: 1,
-                            EUR: eurPerUsdValue,
-                            TRY: tryPerUsdValue,
-                            GBP: gbpPerUsdValue,
-                            IRT: irtPerUsdValue,
-                            }} t={t} />
+                            <Calculator 
+                                rates={allRates}
+                                t={t} 
+                                onCurrencySelect={handleCurrencySelect}
+                            />
                         </div>
                     </div>
                 )}
@@ -266,6 +294,25 @@ export default function App(): React.ReactElement {
       <Dialog isOpen={isSourcesOpen} onClose={() => setIsSourcesOpen(false)} title={t.sourcesTitle} t={t}>
         <GroundingSources sources={sources.length > 0 ? sources : staticSources} t={t} />
       </Dialog>
+      
+      {modalState.currency && (
+        <>
+          <CurrencyInfoModal
+            isOpen={modalState.view === 'info'}
+            onClose={handleCloseModals}
+            onBuy={handleBuyClick}
+            currencyCode={modalState.currency}
+            t={t}
+          />
+          <BuyCurrencyModal
+            isOpen={modalState.view === 'buy'}
+            onClose={handleCloseModals}
+            currencyCode={modalState.currency}
+            rates={allRates}
+            t={t}
+          />
+        </>
+      )}
 
       {!isInitialLoading && (
         <>

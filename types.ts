@@ -101,4 +101,32 @@ export interface Translation {
   gbpTooltip: string;
   irtTooltip: string;
   resultTooltip: string;
+  // Currency Info Modal
+  currencyInfoTitle: (name: string) => string;
+  buyCurrencyTitle: (name: string) => string;
+  buyButton: (code: string) => string;
+  isoCode: string;
+  commonUses: string;
+  funFact: string;
+  purchaseAmount: string;
+  costInIqd: string;
+  // Currency Details
+  usd_name: string;
+  usd_description: string;
+  usd_fact: string;
+  iqd_name: string;
+  iqd_description: string;
+  iqd_fact: string;
+  eur_name: string;
+  eur_description: string;
+  eur_fact: string;
+  try_name: string;
+  try_description: string;
+  try_fact: string;
+  gbp_name: string;
+  gbp_description: string;
+  gbp_fact: string;
+  irt_name: string;
+  irt_description: string;
+  irt_fact: string;
 }

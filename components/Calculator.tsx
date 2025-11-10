@@ -8,6 +8,7 @@ interface CalculatorProps {
     [key: string]: number;
   };
   t: Translation;
+  onCurrencySelect: (currencyCode: string) => void;
 }
 
 const SwapIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -29,7 +30,7 @@ const Tooltip: React.FC<{ text: string; children: React.ReactNode; className?: s
 };
 
 
-export const Calculator: React.FC<CalculatorProps> = ({ rates, t }) => {
+export const Calculator: React.FC<CalculatorProps> = ({ rates, t, onCurrencySelect }) => {
   const [amount, setAmount] = useState('');
   const [fromCurrency, setFromCurrency] = useState('USD');
   const [toCurrency, setToCurrency] = useState('IQD');
@@ -142,7 +143,9 @@ export const Calculator: React.FC<CalculatorProps> = ({ rates, t }) => {
           </p>
           {directRate > 0 && fromCurrency !== toCurrency && (
               <p className="text-xs text-green-600 dark:text-green-400 mt-1.5 font-mono" dir="ltr">
-                  1 {fromCurrency} ≈ {directRate.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })} {toCurrency}
+                  1 <button onClick={() => onCurrencySelect(fromCurrency)} className="font-semibold underline hover:text-green-700 dark:hover:text-green-300 focus:outline-none focus:ring-1 focus:ring-sky-500 rounded px-1 transition-colors">{fromCurrency}</button> 
+                  ≈ {directRate.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })} 
+                  <button onClick={() => onCurrencySelect(toCurrency)} className="font-semibold underline hover:text-green-700 dark:hover:text-green-300 focus:outline-none focus:ring-1 focus:ring-sky-500 rounded px-1 transition-colors">{toCurrency}</button>
               </p>
           )}
         </div>

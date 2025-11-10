@@ -7,6 +7,7 @@ interface DialogProps {
   title: string;
   children: React.ReactNode;
   t: Translation;
+  footer?: React.ReactNode;
 }
 
 const CloseIcon: React.FC = () => (
@@ -15,7 +16,7 @@ const CloseIcon: React.FC = () => (
     </svg>
 );
 
-export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, title, children, t }) => {
+export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, title, children, t, footer }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,7 +28,6 @@ export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, title, children
 
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown);
-      dialogRef.current?.focus();
     }
 
     return () => {
@@ -68,14 +68,18 @@ export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, title, children
             {children}
         </div>
 
-        <div className="mt-6 text-center">
-            <button 
-                onClick={onClose}
-                className="w-full px-4 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 active:bg-sky-800 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
-            >
-                {t.closeButton}
-            </button>
-        </div>
+        {footer === undefined ? (
+          <div className="mt-6 text-center">
+              <button 
+                  onClick={onClose}
+                  className="w-full px-4 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 active:bg-sky-800 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+              >
+                  {t.closeButton}
+              </button>
+          </div>
+        ) : (
+          footer && <div className="mt-6 text-center">{footer}</div>
+        )}
 
         <style>{`
           @keyframes fadeIn {
